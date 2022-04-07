@@ -2,7 +2,6 @@ package com.company;
 
 public class Person {
     private String name;
-    private static int ID;
     private String password;
     private String username;
     private String role;
@@ -24,14 +23,6 @@ public class Person {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public static int getID() {
-        return ID;
-    }
-
-    public static void setID(int ID) {
-        Person.ID = ID;
     }
 
     public String getPassword() {
