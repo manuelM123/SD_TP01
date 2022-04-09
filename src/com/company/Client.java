@@ -11,6 +11,7 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+
 public class Client {
     /*private static void createGUI(){
         JFrame Login_Menu = new JFrame("Login Menu");
@@ -68,7 +69,13 @@ public class Client {
                         break;
                     //Register method
                     case 2:
-
+                        user = Register_Methods();
+                        if(user != null) {
+                            LoginObject.Register(user);
+                            Menu_Role(user.getRole());
+                        }
+                        else
+                            System.out.println("Failed to register!");
                         break;
                     //View news method
                     case 3:
@@ -84,16 +91,13 @@ public class Client {
 
                 }
             }while(option != 4);
-            while(true){
-
-            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
     public static void main(String[] args) {
-
+        Client C = new Client();
     }
 
     public void Login_menu(){
@@ -105,25 +109,107 @@ public class Client {
     }
 
     public void Menu_Role(String role){
+        int option = 0;
         if(role.equals("Publisher")){
-            System.out.println("1- Add a topic");
-            System.out.println("2- View existing topics");
-            System.out.println("3- Insert news from a topic");
-            System.out.println("4- View every published news");
-            System.out.println("5- Logout");
-            System.out.println("-----------------------");
+            do {
+                System.out.println("Publisher Menu");
+                System.out.println("1- Add a topic");
+                System.out.println("2- View existing topics");
+                System.out.println("3- Insert news from a topic");
+                System.out.println("4- View every published news");
+                System.out.println("5- Logout");
+
+                option = Ler.umInt();
+
+                switch (option){
+                    case 1:
+
+                        break;
+
+                    case 2:
+
+                        break;
+
+                    case 3:
+
+                        break;
+
+                    case 4:
+
+                        break;
+
+                    case 5:
+                        System.out.println("Returning to login menu.");
+                        break;
+
+                    default:
+                        System.out.println("Invalid option! Insert again!");
+                        break;
+                }
+                System.out.println("-----------------------");
+            }while (option != 5);
         }
         else if(role.equals("Subscriber")){
-            System.out.println("1- Subscribe a topic");
-            System.out.println("2- View news from a topic in a timestamp");
-            System.out.println("3- View last news from a topic");
-            System.out.println("4- Logout");
-            System.out.println("-----------------------");
+            do {
+                System.out.println("Subscriber Menu");
+                System.out.println("1- Subscribe a topic");
+                System.out.println("2- View news from a topic in a timestamp");
+                System.out.println("3- View last news from a topic");
+                System.out.println("4- Logout");
+                System.out.println("-----------------------");
+
+                option = Ler.umInt();
+
+                switch (option) {
+                    case 1:
+
+                        break;
+
+                    case 2:
+
+                        break;
+
+                    case 3:
+
+                        break;
+
+                    case 4:
+                        System.out.println("Returning to login menu.");
+                        break;
+
+                    default:
+                        System.out.println("Invalid option! Insert again!");
+                        break;
+                }
+                System.out.println("-----------------------");
+            }while (option != 4);
         } else{
-            System.out.println("1- View news from a topic in a timestamp");
-            System.out.println("2- View last news from a topic");
-            System.out.println("3- Logout");
-            System.out.println("-----------------------");
+            do {
+                System.out.println("Non-Subscriber Menu");
+                System.out.println("1- View news from a topic in a timestamp");
+                System.out.println("2- View last news from a topic");
+                System.out.println("3- Logout");
+                System.out.println("-----------------------");
+
+                switch (option) {
+                    case 1:
+
+                        break;
+
+                    case 2:
+
+                        break;
+
+                    case 3:
+                        System.out.println("Returning to login menu.");
+                        break;
+
+                    default:
+                        System.out.println("Invalid option! Insert again!");
+                        break;
+                }
+                System.out.println("-----------------------");
+            }while (option != 3);
         }
     }
 
@@ -147,6 +233,61 @@ public class Client {
             return P;
         }
         return null;
+    }
+
+    public Person Register_Methods() throws RemoteException {
+        System.out.println("Insert name: ");
+        String name = Ler.umaString();
+
+        System.out.println("-----------------------");
+
+
+        System.out.println("Insert username: ");
+        String username = Ler.umaString();
+
+        System.out.println("-----------------------");
+
+        //see in future implementation to keep input of data until it's right or user cancels operation
+        if(LoginObject.Username(username)){
+            System.out.println("Username already exists!");
+            return null;
+        }
+
+        System.out.println("Insert password: ");
+        String password = Ler.umaString();
+
+        System.out.println("-----------------------");
+
+        int option;
+        String role = "";
+
+        do {
+            System.out.println("Choose role: ");
+            System.out.println("1 - Publisher ");
+            System.out.println("2 - Subscriber ");
+            System.out.println("3 - Cancel operation");
+
+            option = Ler.umInt();
+
+            switch (option) {
+                case 1: role = "Publisher";
+                        break;
+                case 2: role = "Subscriber";
+                        break;
+
+                case 3: return null;
+
+                default:
+                    System.out.println("Wrong option. Choose again!");
+            }
+
+        }while (option >= 3 || option <= 0);
+
+        Person P = new Person(name,password,username,role);
+
+        System.out.println("-------------------------------------------");
+
+        return P;
     }
 
     /*public ArrayList<String> Credentials_menu(){

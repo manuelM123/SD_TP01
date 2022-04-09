@@ -1,10 +1,14 @@
 package com.company;
 
-public class Person {
+import java.io.Serializable;
+
+public class Person implements Serializable {
     private String name;
     private String password;
     private String username;
     private String role;
+
+    private static final long serialVersionUID = 1L;
 
     public Person() {
 
@@ -47,5 +51,15 @@ public class Person {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", password='" + password + '\'' +
+                ", username='" + username + '\'' +
+                ", role='" + role + '\'' +
+                '}';
     }
 }
