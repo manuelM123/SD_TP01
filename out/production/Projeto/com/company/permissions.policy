@@ -2,4 +2,10 @@ grant {
  // allows anyone to listen on un-privileged ports
  permission java.net.SocketPermission "*:1024-65535", "listen,accept,connect";
  permission java.io.FilePermission  "src/com/company/users.bin", "read,write";
+ permission java.io.FilePermission  "src/com/company/newslist.bin", "read,write";
+ permission java.io.FilePermission  "src/com/company/topics.bin", "read,write";
+};
+
+grant {
+    permission java.io.FilePermission  "src/com/company/app.config", "read";
 };

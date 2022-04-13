@@ -50,7 +50,7 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
     }
 
     @Override
-    public void Register(Person P) {
+    public void Register(Person P) throws RemoteException {
         System.out.println(P);
         users.add(P);
         try {

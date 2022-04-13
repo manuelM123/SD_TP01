@@ -44,6 +44,7 @@ public class Client {
         Login_Menu.setVisible(true);
     }*/
     RMIInterfaceLogin LoginObject;
+    RMIInterfaceNews NewsObject;
     Person user = null;
 
     public Client(){
@@ -51,6 +52,7 @@ public class Client {
         try{
             //method to bind server object to object in client (shared remote object)
             LoginObject = (RMIInterfaceLogin) Naming.lookup("RMIImplLogin");
+            NewsObject = (RMIInterfaceNews) Naming.lookup("RMIImplNews");
 
             int option;
             do{
@@ -123,19 +125,52 @@ public class Client {
 
                 switch (option){
                     case 1:
-
+                        System.out.println("Insert topic:");
+                        try {
+                            if(NewsObject.add_Topic(Ler.umaString()))
+                                System.out.println("Topic added!");
+                            else
+                                System.out.println("Topic already exists!");
+                        } catch (RemoteException e) {
+                            System.out.println(e.getMessage());
+                        }
                         break;
-
                     case 2:
-
+                        try {
+                            ArrayList<String> topicsList = NewsObject.consult_Topics();
+                            for(String t: topicsList){
+                                System.out.println(" - " + t);
+                            }
+                        } catch (RemoteException e) {
+                            System.out.println(e.getMessage());
+                        }
                         break;
 
                     case 3:
+                        try{
+                            News n = createNews();
+                            if(n == null){
+                                System.out.println("News not created!");
+                                System.out.println("Returning to menu...");
+                            }else{
+                                System.out.println("News created!");
+                                NewsObject.add_News(n);
+                            }
+                        } catch (RemoteException e) {
+                        System.out.println(e.getMessage());
+                        }
 
                         break;
 
                     case 4:
-
+                        try{
+                            ArrayList<News> newsArrayList = NewsObject.consult_news_publisher(user);
+                            for(News n : newsArrayList){
+                                System.out.println(n.toString());
+                            }
+                        }catch (RemoteException e){
+                            System.out.println(e.getMessage());
+                        }
                         break;
 
                     case 5:
@@ -303,4 +338,30 @@ public class Client {
 
         return credentials;
     }*/
+
+    public News createNews(){
+        News n = new News();
+        String s;
+        System.out.println("Insert topic:");
+        n.setTopic(Ler.umaString());
+        System.out.println("Insert title:");
+        n.setTitle(Ler.umaString());
+        do {
+            System.out.println("Insert content: (max 180 characters)");
+            s = Ler.umaString();
+            if(s.length() <= 180)
+                break;
+            else{
+                System.out.println("Maximum of 180 characters reach. Please insert again!");
+                System.out.println("Type Yes to continue, No to cancel.");
+                s = Ler.umaString();
+                if(s.equalsIgnoreCase("no"))
+                    return null;
+            }
+        }while(true);
+        n.setContent(s);
+        n.setPublisher(user);
+        System.out.println(n.toString());
+        return n;
+    }
 }
