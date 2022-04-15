@@ -165,16 +165,16 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         }
     }
 
-    public ArrayList<News> news_from_timestamp(Date start, Date end) throws RemoteException{
+    public ArrayList<News> news_from_timestamp(Date start, Date end, String topic) throws RemoteException{
         ArrayList<News> newsFromTimestamp = new ArrayList<News>();
         for(News n: NewsList){
-            if(n.getTimestamp().after(start) && n.getTimestamp().before(end))
+            if(n.getTimestamp().after(start) && n.getTimestamp().before(end) && n.getTopic().equalsIgnoreCase(topic))
                 newsFromTimestamp.add(n);
         }
         return newsFromTimestamp;
     }
 
-    public ArrayList<String> news_from_timestamp_backup(Date start, Date end) throws RemoteException{
+    public ArrayList<String> news_from_timestamp_backup(Date start, Date end, String topic) throws RemoteException{
         ArrayList<String> backupIpPort = new ArrayList<String>();
         ObjectInputStream is = null;
         News backupNews = null;
@@ -184,7 +184,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
             while( (obj = is.readObject()) != null)
             {
                 backupNews = (News) obj;
-                if(backupNews.getTimestamp().after(start) && backupNews.getTimestamp().before(end)){
+                if(backupNews.getTimestamp().after(start) && backupNews.getTimestamp().before(end) && backupNews.getTopic().equalsIgnoreCase(topic)){
                     backupIpPort.add(prop.getProperty("app.backupIp"));
                     backupIpPort.add(prop.getProperty("app.backupPort"));
                     return backupIpPort;

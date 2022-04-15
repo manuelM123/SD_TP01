@@ -20,36 +20,6 @@ import java.util.GregorianCalendar;
 
 
 public class Client {
-    /*private static void createGUI(){
-        JFrame Login_Menu = new JFrame("Login Menu");
-        JPanel panel = new JPanel();
-
-        JTextField J = new JTextField("Insert Username");
-        JTextField J1 = new JTextField("Insert Password");
-        J.setBounds(90,100, 200,30);
-        J1.setBounds(90,150, 200,30);
-
-        Login_Menu.add(J);
-        Login_Menu.add(J1);
-
-        J.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                J.setText("");
-            }
-        });
-
-        J1.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                J1.setText("");
-            }
-        });
-
-        Login_Menu.setSize(400,400);
-        Login_Menu.setLayout(null);
-        Login_Menu.setVisible(true);
-    }*/
     RMIInterfaceLogin LoginObject;
     RMIInterfaceNews NewsObject;
     Person user = null;
@@ -88,7 +58,7 @@ public class Client {
                         break;
                     //View news method
                     case 3:
-
+                        Menu_Role("");
                         break;
 
                     case 4:
@@ -243,75 +213,11 @@ public class Client {
                          *            request if the user wants to check the backup for more news
                          * else -> show an error to the user
                          * */
-                        System.out.println("Insert starting date:");
-                        Date date1 = insertDate();
-                        System.out.println("Insert final date:");
-                        Date date2 = insertDate();
-                        if(date1.after(date2)){
-                            Date aux = date2;
-                            date2 = date1;
-                            date1 = aux;
-                        }
-                        try {
-                            ArrayList<News> newsFromTimestamp = NewsObject.news_from_timestamp(date1,date2);
-                            if(newsFromTimestamp.size() !=0){
-                                for(News n: newsFromTimestamp){
-                                    System.out.println(n.toString());
-                                }
-                            }else{
-                                System.out.println("There are no news in the main server.");
-                            }
-
-
-                            ArrayList<String> backupIpPort = NewsObject.news_from_timestamp_backup(date1,date2);
-                            if(backupIpPort.size() != 0){
-                                System.out.println("There are news in the arquive within that timestamp.");
-                                System.out.println("Do you want to see it? (Yes or No)");
-                                String s = Ler.umaString();
-                                if(s.equalsIgnoreCase("yes")){
-                                    newsFromTimestamp = news_from_backup(date1,date2,backupIpPort.get(0),backupIpPort.get(1));
-                                    for(News n: newsFromTimestamp){
-                                        System.out.println(n.toString());
-                                    }
-                                }
-                            }else{
-                                System.out.println("No news in the arquive in that timestamp.");
-                            }
-                        }catch (RemoteException e){
-                            System.out.println(e.getMessage());
-                        }
-
+                        view_news_from_topic_timestamp();
                         break;
 
                     case 3:
-
-                        try {
-                            ArrayList<String> allTopics;
-                            allTopics = NewsObject.consult_Topics();
-                            System.out.println("Choose a topic from the list:");
-                            System.out.println("0 - Cancel operation.");
-                            for (int i = 0; i < allTopics.size(); i++) {
-                                System.out.println((i+1) + " - " + allTopics.get(i)+".");
-                            }
-                            int choice=-1;
-                            do {
-                                choice= Ler.umInt();
-                                if((choice < 0 || choice > allTopics.size()))
-                                    System.out.println("Wrong choice, please choose again.");
-                                else
-                                    break;
-                            }while (true);
-                            if(choice != 0){
-                                News latestNewsFromTopic = NewsObject.latest_news_from_topic(allTopics.get(choice-1));
-                                if(latestNewsFromTopic!=null)
-                                    System.out.println(latestNewsFromTopic);
-                                else{
-                                    System.out.println("There are no news with that topic.");
-                                }
-                            }
-                        } catch (RemoteException e) {
-                            System.out.println(e.getMessage());
-                        }
+                        view_last_news_from_topic();
                         break;
 
                     case 4:
@@ -331,14 +237,14 @@ public class Client {
                 System.out.println("2- View last news from a topic");
                 System.out.println("3- Logout");
                 System.out.println("-----------------------");
-
+                option=Ler.umInt();
                 switch (option) {
                     case 1:
-
+                        view_news_from_topic_timestamp();
                         break;
 
                     case 2:
-
+                        view_last_news_from_topic();
                         break;
 
                     case 3:
@@ -560,5 +466,97 @@ public class Client {
             e.printStackTrace();
         }
         return newsListFromBackup;
+    }
+
+    public void view_news_from_topic_timestamp(){
+        try {
+            ArrayList<String> allTopics;
+            allTopics = NewsObject.consult_Topics();
+            System.out.println("Choose a topic from the list:");
+            System.out.println("0 - Cancel operation.");
+            for (int i = 0; i < allTopics.size(); i++) {
+                System.out.println((i+1) + " - " + allTopics.get(i)+".");
+            }
+            int choice=-1;
+            do {
+                choice= Ler.umInt();
+                if((choice < 0 || choice > allTopics.size()))
+                    System.out.println("Wrong choice, please choose again.");
+                else
+                    break;
+            }while (true);
+            if(choice!=0){
+                String topic= allTopics.get(choice-1);
+                System.out.println("Insert starting date:");
+                Date date1 = insertDate();
+                System.out.println("Insert final date:");
+                Date date2 = insertDate();
+                if(date1.after(date2)){
+                    Date aux = date2;
+                    date2 = date1;
+                    date1 = aux;
+                }
+                try {
+                    ArrayList<News> newsFromTimestamp = NewsObject.news_from_timestamp(date1,date2,topic);
+                    if(newsFromTimestamp.size() !=0){
+                        for(News n: newsFromTimestamp){
+                            System.out.println(n.toString());
+                        }
+                    }else{
+                        System.out.println("There are no news in the main server.");
+                    }
+
+
+                    ArrayList<String> backupIpPort = NewsObject.news_from_timestamp_backup(date1,date2,topic);
+                    if(backupIpPort.size() != 0){
+                        System.out.println("There are news in the arquive within that timestamp.");
+                        System.out.println("Do you want to see it? (Yes or No)");
+                        String s = Ler.umaString();
+                        if(s.equalsIgnoreCase("yes")){
+                            newsFromTimestamp = news_from_backup(date1,date2,backupIpPort.get(0),backupIpPort.get(1));
+                            for(News n: newsFromTimestamp){
+                                System.out.println(n.toString());
+                            }
+                        }
+                    }else{
+                        System.out.println("No news in the arquive in that timestamp.");
+                    }
+                }catch (RemoteException e){
+                    System.out.println(e.getMessage());
+                }
+            }
+        } catch (RemoteException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void view_last_news_from_topic(){
+        try {
+            ArrayList<String> allTopics;
+            allTopics = NewsObject.consult_Topics();
+            System.out.println("Choose a topic from the list:");
+            System.out.println("0 - Cancel operation.");
+            for (int i = 0; i < allTopics.size(); i++) {
+                System.out.println((i+1) + " - " + allTopics.get(i)+".");
+            }
+            int choice=-1;
+            do {
+                choice= Ler.umInt();
+                if((choice < 0 || choice > allTopics.size()))
+                    System.out.println("Wrong choice, please choose again.");
+                else
+                    break;
+            }while (true);
+            if(choice != 0){
+                News latestNewsFromTopic = NewsObject.latest_news_from_topic(allTopics.get(choice-1));
+                if(latestNewsFromTopic!=null)
+                    System.out.println(latestNewsFromTopic);
+                else{
+                    System.out.println("There are no news with that topic.");
+                }
+            }
+        } catch (RemoteException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
