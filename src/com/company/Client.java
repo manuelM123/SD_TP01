@@ -205,8 +205,8 @@ public class Client {
                 switch (option) {
                     case 1:
                         ArrayList<String> currentTopics, subscribedTopics;
-                        int choice=-1;
                         try{
+                            int choice=-1;
                             currentTopics = NewsObject.consult_Topics();
                             subscribedTopics = ((Subscriber) user).getSubscribedTopics();
                             if(currentTopics.size() == 0 || currentTopics.size() == subscribedTopics.size()) {
@@ -221,9 +221,7 @@ public class Client {
                             }
                             do {
                                 choice = Ler.umInt();
-                                if(choice == 0)
-                                    break;
-                                else if((choice < 0 || choice > currentTopics.size()) && subscribedTopics.contains(currentTopics.get(choice-1)))
+                                if((choice < 0 || choice > currentTopics.size()) && subscribedTopics.contains(currentTopics.get(choice-1)))
                                     System.out.println("Wrong choice, please choose again.");
                                 else
                                     break;
@@ -245,12 +243,75 @@ public class Client {
                          *            request if the user wants to check the backup for more news
                          * else -> show an error to the user
                          * */
-                        Date date = insertDate();
+                        System.out.println("Insert starting date:");
+                        Date date1 = insertDate();
+                        System.out.println("Insert final date:");
+                        Date date2 = insertDate();
+                        if(date1.after(date2)){
+                            Date aux = date2;
+                            date2 = date1;
+                            date1 = aux;
+                        }
+                        try {
+                            ArrayList<News> newsFromTimestamp = NewsObject.news_from_timestamp(date1,date2);
+                            if(newsFromTimestamp.size() !=0){
+                                for(News n: newsFromTimestamp){
+                                    System.out.println(n.toString());
+                                }
+                            }else{
+                                System.out.println("There are no news in the main server.");
+                            }
+
+
+                            ArrayList<String> backupIpPort = NewsObject.news_from_timestamp_backup(date1,date2);
+                            if(backupIpPort.size() != 0){
+                                System.out.println("There are news in the arquive within that timestamp.");
+                                System.out.println("Do you want to see it? (Yes or No)");
+                                String s = Ler.umaString();
+                                if(s.equalsIgnoreCase("yes")){
+                                    newsFromTimestamp = news_from_backup(date1,date2,backupIpPort.get(0),backupIpPort.get(1));
+                                    for(News n: newsFromTimestamp){
+                                        System.out.println(n.toString());
+                                    }
+                                }
+                            }else{
+                                System.out.println("No news in the arquive in that timestamp.");
+                            }
+                        }catch (RemoteException e){
+                            System.out.println(e.getMessage());
+                        }
 
                         break;
 
                     case 3:
 
+                        try {
+                            ArrayList<String> allTopics;
+                            allTopics = NewsObject.consult_Topics();
+                            System.out.println("Choose a topic from the list:");
+                            System.out.println("0 - Cancel operation.");
+                            for (int i = 0; i < allTopics.size(); i++) {
+                                System.out.println((i+1) + " - " + allTopics.get(i)+".");
+                            }
+                            int choice=-1;
+                            do {
+                                choice= Ler.umInt();
+                                if((choice < 0 || choice > allTopics.size()))
+                                    System.out.println("Wrong choice, please choose again.");
+                                else
+                                    break;
+                            }while (true);
+                            if(choice != 0){
+                                News latestNewsFromTopic = NewsObject.latest_news_from_topic(allTopics.get(choice-1));
+                                if(latestNewsFromTopic!=null)
+                                    System.out.println(latestNewsFromTopic);
+                                else{
+                                    System.out.println("There are no news with that topic.");
+                                }
+                            }
+                        } catch (RemoteException e) {
+                            System.out.println(e.getMessage());
+                        }
                         break;
 
                     case 4:
@@ -423,14 +484,14 @@ public class Client {
         do {
             System.out.println("Month:");
             month = Ler.umInt();
-        }while (month < 1 || (month > Calendar.getInstance().get(Calendar.MONTH)
+        }while (month < 1 || (month > Calendar.getInstance().get(Calendar.MONTH) +1
                 && year == Calendar.getInstance().get(Calendar.YEAR)) || month > 12);
         do {
             System.out.println("Day:");
             day = Ler.umInt();
         }while (day < 1 || day  > getMonthDays(month,year) ||
                 (day > Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH) +1
                         && year == Calendar.getInstance().get(Calendar.YEAR)));
         do {
             System.out.println("Hours:");
@@ -438,7 +499,7 @@ public class Client {
         }while(hours < 0 || hours > 23 ||
                 (hours > Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
                         && day == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH) +1
                         && year == Calendar.getInstance().get(Calendar.YEAR)));
         do{
             System.out.println("Minutes:");
@@ -446,7 +507,7 @@ public class Client {
         }while(minutes < 0 || minutes > 59 ||
                 (minutes > Calendar.getInstance().get(Calendar.MINUTE) && hours == Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
                         && day == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH) +1
                         && year == Calendar.getInstance().get(Calendar.YEAR)));
         do {
             System.out.println("Seconds:");
@@ -454,7 +515,7 @@ public class Client {
         }while (seconds < 0 || seconds > 59 ||
                 (seconds > Calendar.getInstance().get(Calendar.SECOND) && minutes == Calendar.getInstance().get(Calendar.MINUTE) && hours == Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
                         && day == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH) +1
                         && year == Calendar.getInstance().get(Calendar.YEAR)));
 
         try {
@@ -478,5 +539,26 @@ public class Client {
             }
         }
         return daysInMonth;
+    }
+
+    public ArrayList<News> news_from_backup(Date start, Date end, String ip, String port){
+        Socket S = null;
+        ArrayList<News> newsListFromBackup = new ArrayList<News>();
+        try {
+            S = new Socket(ip,Integer.parseInt(port));
+            ObjectOutputStream os = new ObjectOutputStream(S.getOutputStream());
+            ObjectInputStream is = new ObjectInputStream(S.getInputStream());
+            os.writeObject(start);
+            os.flush();
+            os.writeObject(end);
+            os.flush();
+            newsListFromBackup = (ArrayList<News>) is.readObject();
+            os.close();
+            is.close();
+            return newsListFromBackup;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return newsListFromBackup;
     }
 }

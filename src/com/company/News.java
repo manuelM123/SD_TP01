@@ -64,11 +64,19 @@ public class News implements Serializable {
 
     @Override
     public String toString() {
+        if(timestamp != null)
         return '\n' +
                 "Topic - " + topic + '\n' +
                 "Title - " + title + '\n' +
                 "Content - " + content + '\n' +
                 "Publisher - " + publisher.getName() + '\n' +
                 "Timestamp - " + timestamp + '\n' +  "-------------";
+        else
+            return '\n' +
+                    "Topic - " + topic + '\n' +
+                    "Title - " + title + '\n' +
+                    "Content - " + content + '\n' +
+                    "Publisher - " + publisher.getName() + '\n' +
+                    "-------------";
     }
 }
