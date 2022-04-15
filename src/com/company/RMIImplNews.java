@@ -41,6 +41,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         readWriteFile(TOPICSWRITE);
         return true;
     }
+
     public ArrayList<String> consult_Topics() throws RemoteException{
         ArrayList<String> topicsNames = new ArrayList<String>();
         for (Topic t : Topics) {
@@ -48,6 +49,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         }
         return topicsNames;
     }
+
     public boolean add_News(News news) throws RemoteException{
         /**
         * Check if limit of news' topic has been reached
@@ -143,4 +145,6 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                 break;
         }
     }
+
+
 }

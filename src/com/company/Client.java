@@ -9,7 +9,14 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Year;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 
 public class Client {
@@ -197,10 +204,48 @@ public class Client {
 
                 switch (option) {
                     case 1:
-
+                        ArrayList<String> currentTopics, subscribedTopics;
+                        int choice=-1;
+                        try{
+                            currentTopics = NewsObject.consult_Topics();
+                            subscribedTopics = ((Subscriber) user).getSubscribedTopics();
+                            if(currentTopics.size() == 0 || currentTopics.size() == subscribedTopics.size()) {
+                                System.out.println("No topics available");
+                                break;
+                            }
+                            System.out.println("Choose a topic from the list:");
+                            System.out.println("0 - Cancel operation.");
+                            for (int i = 0; i < currentTopics.size(); i++) {
+                                if(!subscribedTopics.contains(currentTopics.get(i)))
+                                    System.out.println((i+1) + " - " + currentTopics.get(i)+".");
+                            }
+                            do {
+                                choice = Ler.umInt();
+                                if(choice == 0)
+                                    break;
+                                else if((choice < 0 || choice > currentTopics.size()) && subscribedTopics.contains(currentTopics.get(choice-1)))
+                                    System.out.println("Wrong choice, please choose again.");
+                                else
+                                    break;
+                            }while (true);
+                            if(choice != 0){
+                                ((Subscriber) user).addTopic(currentTopics.get(choice-1));
+                                LoginObject.addTopic(user);
+                            }
+                        }catch (RemoteException e){
+                            System.out.println(e.getMessage());
+                        }
                         break;
 
                     case 2:
+                        /**Request the date from the user by input(Ler.method)
+                         * Keep the values from input
+                         * Verify if news exist with such timestamp
+                         * if true -> show the list of news in that timestamp
+                         *            request if the user wants to check the backup for more news
+                         * else -> show an error to the user
+                         * */
+                        Date date = insertDate();
 
                         break;
 
@@ -295,7 +340,7 @@ public class Client {
 
         int option;
         String role = "";
-
+        Person P = null;
         do {
             System.out.println("Choose role: ");
             System.out.println("1 - Publisher ");
@@ -305,9 +350,12 @@ public class Client {
             option = Ler.umInt();
 
             switch (option) {
-                case 1: role = "Publisher";
+                case 1:
+                    role = "Publisher";
+                    P = new Publisher(name,password,username,role);
                         break;
                 case 2: role = "Subscriber";
+                    P = new Subscriber(name,password,username,role);
                         break;
 
                 case 3: return null;
@@ -318,7 +366,6 @@ public class Client {
 
         }while (option >= 3 || option <= 0);
 
-        Person P = new Person(name,password,username,role);
 
         System.out.println("-------------------------------------------");
 
@@ -363,5 +410,73 @@ public class Client {
         n.setPublisher(user);
         System.out.println(n.toString());
         return n;
+    }
+
+    public Date insertDate(){
+        int year,month,day,hours,minutes,seconds;
+        SimpleDateFormat sourceDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = null;
+        do{
+            System.out.println("Year:");
+            year = Ler.umInt();
+        }while (year < 1970 || year > Calendar.getInstance().get(Calendar.YEAR));
+        do {
+            System.out.println("Month:");
+            month = Ler.umInt();
+        }while (month < 1 || (month > Calendar.getInstance().get(Calendar.MONTH)
+                && year == Calendar.getInstance().get(Calendar.YEAR)) || month > 12);
+        do {
+            System.out.println("Day:");
+            day = Ler.umInt();
+        }while (day < 1 || day  > getMonthDays(month,year) ||
+                (day > Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && year == Calendar.getInstance().get(Calendar.YEAR)));
+        do {
+            System.out.println("Hours:");
+            hours = Ler.umInt();
+        }while(hours < 0 || hours > 23 ||
+                (hours > Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                        && day == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && year == Calendar.getInstance().get(Calendar.YEAR)));
+        do{
+            System.out.println("Minutes:");
+            minutes = Ler.umInt();
+        }while(minutes < 0 || minutes > 59 ||
+                (minutes > Calendar.getInstance().get(Calendar.MINUTE) && hours == Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                        && day == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && year == Calendar.getInstance().get(Calendar.YEAR)));
+        do {
+            System.out.println("Seconds:");
+            seconds = Ler.umInt();
+        }while (seconds < 0 || seconds > 59 ||
+                (seconds > Calendar.getInstance().get(Calendar.SECOND) && minutes == Calendar.getInstance().get(Calendar.MINUTE) && hours == Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                        && day == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+                        && month == Calendar.getInstance().get(Calendar.MONTH)
+                        && year == Calendar.getInstance().get(Calendar.YEAR)));
+
+        try {
+            date = sourceDateFormat.parse(year+"-"+month+"-"+day+" "+hours+":"+minutes+":"+seconds);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+        }
+        return date;
+    }
+
+    public static int getMonthDays(int month, int year) {
+        int daysInMonth ;
+        if (month == 4 || month == 6 || month == 9 || month == 11) {
+            daysInMonth = 30;
+        }
+        else {
+            if (month == 2) {
+                daysInMonth = (year % 4 == 0) ? 29 : 28;
+            } else {
+                daysInMonth = 31;
+            }
+        }
+        return daysInMonth;
     }
 }

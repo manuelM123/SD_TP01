@@ -53,6 +53,19 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
     public void Register(Person P) throws RemoteException {
         System.out.println(P);
         users.add(P);
+        saveUsers();
+    }
+
+    @Override
+    public void addTopic(Person P) throws RemoteException {
+        for(Person user: users){
+            if(user.getUsername().equals(P.getUsername()))
+                users.set(users.indexOf(user),P);
+        }
+        saveUsers();
+    }
+
+    private void saveUsers(){
         try {
             ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream("src/com/company/users.bin"));
             os.writeObject(users);
