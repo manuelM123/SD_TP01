@@ -17,9 +17,11 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
     public static int NEWSLISTREAD = 3;
     public static int TOPICSREAD = 4;
     public static int BACKUPWRITE = 5;
+    private static ArrayList<ClientCallbackInterface> clientsCallback;
 
     protected RMIImplNews() throws RemoteException {
         super();
+        clientsCallback=new ArrayList<ClientCallbackInterface>();
         NewsList = new ArrayList<News>();
         Topics = new ArrayList<Topic>();
         prop = new Properties();
@@ -42,6 +44,8 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         }
         Topics.add(new Topic(Topic,0));
         readWriteFile(TOPICSWRITE,null);
+        System.out.println(clientsCallback);
+        //clientsCallback.get(0).showNotificationOnClient("Arroz e melancia");
         return true;
     }
 
@@ -204,5 +208,16 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
             }
         }
         return null;
+    }
+
+    @Override
+    public void showOnServer(String s) throws RemoteException {
+
+    }
+
+    @Override
+    public void subscribe(String s, ClientCallbackInterface client) throws RemoteException {
+        System.out.println("Subscribing" + s);
+        clientsCallback.add(client);
     }
 }

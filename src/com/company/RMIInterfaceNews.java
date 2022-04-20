@@ -13,4 +13,6 @@ public interface RMIInterfaceNews extends java.rmi.Remote{
     public ArrayList<News> news_from_timestamp(Date start, Date end, String topic) throws RemoteException;
     public ArrayList<String> news_from_timestamp_backup(Date start, Date end, String topic) throws RemoteException;
     public News latest_news_from_topic(String topic) throws RemoteException;
+    public void showOnServer(String s) throws java.rmi.RemoteException;
+    public void subscribe(String s, ClientCallbackInterface client) throws java.rmi.RemoteException;
 }

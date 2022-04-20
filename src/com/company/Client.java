@@ -19,17 +19,20 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 
-public class Client {
+public class Client extends java.rmi.server.UnicastRemoteObject implements ClientCallbackInterface{
     RMIInterfaceLogin LoginObject;
     RMIInterfaceNews NewsObject;
     Person user = null;
+    Client C;
 
-    public Client(){
+    public Client() throws RemoteException{
+        super();
         System.setSecurityManager(new SecurityManager());
         try{
             //method to bind server object to object in client (shared remote object)
             LoginObject = (RMIInterfaceLogin) Naming.lookup("RMIImplLogin");
             NewsObject = (RMIInterfaceNews) Naming.lookup("RMIImplNews");
+
 
             int option;
             do{
@@ -76,7 +79,15 @@ public class Client {
     }
 
     public static void main(String[] args) {
-        Client C = new Client();
+        try {
+            Client C = new Client();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void registouse() throws RemoteException{
+        System.out.println("CENAS");
     }
 
     public void Login_menu(){
@@ -277,8 +288,10 @@ public class Client {
 
         if(P != null) {
             System.out.println("Login succeeded! Entering menu...");
+            NewsObject.subscribe("ola",(ClientCallbackInterface) C);
             return P;
         }
+
         return null;
     }
 
@@ -558,5 +571,10 @@ public class Client {
         } catch (RemoteException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    @Override
+    public void showNotificationOnClient(String s) throws RemoteException {
+        System.out.println(s);
     }
 }
