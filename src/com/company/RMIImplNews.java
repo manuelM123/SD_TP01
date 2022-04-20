@@ -1,6 +1,7 @@
 package com.company;
 
 import java.io.*;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
@@ -44,8 +45,6 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         }
         Topics.add(new Topic(Topic,0));
         readWriteFile(TOPICSWRITE,null);
-        System.out.println(clientsCallback);
-        //clientsCallback.get(0).showNotificationOnClient("Arroz e melancia");
         return true;
     }
 
@@ -63,6 +62,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         * if true: 50% of the news on that topic will go to backup
         * else: add received news into the current amount of news
         */
+        ArrayList<News> newsToRemove = new ArrayList<>();
         int limit = Integer.parseInt(prop.getProperty("app.topicLimit"));
         for (Topic t : Topics) {
             if (t.getName().equalsIgnoreCase(news.getTopic())){
@@ -81,17 +81,33 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                         if(removed == limit/2)
                             break;
                         else if(n.getTopic().equalsIgnoreCase(t.getName())){
-                            //send data to backup file before removing
                             readWriteFile(BACKUPWRITE,n);
-                            NewsList.remove(n);
+                            newsToRemove.add(n);
                             removed++;
                         }
                     }
+                }
+                for(News n: newsToRemove){
+                    NewsList.remove(n);
                 }
                 news.setTimestamp(new Date());
                 NewsList.add(news);
                 readWriteFile(NEWSLISTWRITE,null);
                 readWriteFile(TOPICSWRITE,null);
+                /**
+                 * Sending callback to the proper subscriber
+                 * */
+                for(ClientCallbackInterface c : clientsCallback){
+                    try{
+                        if(((Subscriber) (c.getUser())).getSubscribedTopics().contains(news.getTopic()))
+                            c.showNotificationOnClient("You have a new news on topic "+news.getTopic()+".");
+                    }catch (ConnectException e){
+                        System.out.println("Cannot connect to client...");
+                        /**
+                         * unsubscribe client from logged in clients
+                         * */
+                    }
+                }
                 return true;
             }
         }
@@ -216,8 +232,8 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
     }
 
     @Override
-    public void subscribe(String s, ClientCallbackInterface client) throws RemoteException {
-        System.out.println("Subscribing" + s);
+    public void subscribe(ClientCallbackInterface client) throws RemoteException {
+        System.out.println("Subscribing: " + client);
         clientsCallback.add(client);
     }
 }

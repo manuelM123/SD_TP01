@@ -5,9 +5,11 @@ import com.myinputs.Ler;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -20,20 +22,32 @@ import java.util.GregorianCalendar;
 
 
 public class Client extends java.rmi.server.UnicastRemoteObject implements ClientCallbackInterface{
-    RMIInterfaceLogin LoginObject;
-    RMIInterfaceNews NewsObject;
-    Person user = null;
+    private static RMIInterfaceLogin LoginObject;
+    private static RMIInterfaceNews NewsObject;
+    private static Person user = null;
     Client C;
+
+    public Person getUser() throws RemoteException {
+        return user;
+    }
 
     public Client() throws RemoteException{
         super();
         System.setSecurityManager(new SecurityManager());
-        try{
+    }
+
+    public static void main(String[] args) {
+        Client C = null;
+        try {
             //method to bind server object to object in client (shared remote object)
             LoginObject = (RMIInterfaceLogin) Naming.lookup("RMIImplLogin");
             NewsObject = (RMIInterfaceNews) Naming.lookup("RMIImplNews");
+            C = new Client();
+        } catch (RemoteException | MalformedURLException | NotBoundException e) {
+            System.out.println(e.getMessage());
+        }
 
-
+        try{
             int option;
             do{
                 Login_menu();
@@ -43,8 +57,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     //Login method
                     case 1:
                         user = Login_methods();
-                        if(user != null)
+                        if(user != null){
+                            if(user.getRole().equalsIgnoreCase("subscriber")){
+                                NewsObject.subscribe((ClientCallbackInterface) C);
+                            }
                             Menu_Role(user.getRole());
+                        }
                         else
                             System.out.println("Wrong credentials! Retry login.");
 
@@ -54,6 +72,9 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         user = Register_Methods();
                         if(user != null) {
                             LoginObject.Register(user);
+                            if(user.getRole().equalsIgnoreCase("subscriber")){
+                                NewsObject.subscribe((ClientCallbackInterface) C);
+                            }
                             Menu_Role(user.getRole());
                         }
                         else
@@ -65,12 +86,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         break;
 
                     case 4:
+                        System.out.println("Exiting...");
                         break;
 
                     default:
                         System.out.println("Invalid option! Insert again!");
                         break;
-
                 }
             }while(option != 4);
         } catch (Exception e) {
@@ -78,19 +99,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            Client C = new Client();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void registouse() throws RemoteException{
-        System.out.println("CENAS");
-    }
-
-    public void Login_menu(){
+    public static void Login_menu(){
         System.out.println("1- Login");
         System.out.println("2- Register");
         System.out.println("3- View news");
@@ -98,7 +107,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         System.out.println("-----------------------");
     }
 
-    public void Menu_Role(String role){
+    public static void Menu_Role(String role){
         int option = 0;
         if(role.equals("Publisher")){
             do {
@@ -163,6 +172,9 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
 
                     case 5:
                         System.out.println("Returning to login menu.");
+                        /**
+                         * unsubscribe client from logged in clients
+                         * */
                         break;
 
                     default:
@@ -271,7 +283,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }
     }
 
-    public Person Login_methods() throws RemoteException {
+    public static Person Login_methods() throws RemoteException {
         String username;
         System.out.println("Insert username");
         username = Ler.umaString();
@@ -288,14 +300,13 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
 
         if(P != null) {
             System.out.println("Login succeeded! Entering menu...");
-            NewsObject.subscribe("ola",(ClientCallbackInterface) C);
             return P;
         }
 
         return null;
     }
 
-    public Person Register_Methods() throws RemoteException {
+    public static Person Register_Methods() throws RemoteException {
         System.out.println("Insert name: ");
         String name = Ler.umaString();
 
@@ -366,7 +377,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return credentials;
     }*/
 
-    public News createNews(){
+    public static News createNews(){
         News n = new News();
         String s;
         System.out.println("Insert topic:");
@@ -392,7 +403,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return n;
     }
 
-    public Date insertDate(){
+    public static Date insertDate(){
         int year,month,day,hours,minutes,seconds;
         SimpleDateFormat sourceDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = null;
@@ -460,7 +471,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return daysInMonth;
     }
 
-    public ArrayList<News> news_from_backup(Date start, Date end, String ip, String port){
+    public static ArrayList<News> news_from_backup(Date start, Date end, String ip, String port){
         Socket S = null;
         ArrayList<News> newsListFromBackup = new ArrayList<News>();
         try {
@@ -481,7 +492,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return newsListFromBackup;
     }
 
-    public void view_news_from_topic_timestamp(){
+    public static void view_news_from_topic_timestamp(){
         try {
             ArrayList<String> allTopics;
             allTopics = NewsObject.consult_Topics();
@@ -543,7 +554,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }
     }
 
-    public void view_last_news_from_topic(){
+    public static void view_last_news_from_topic(){
         try {
             ArrayList<String> allTopics;
             allTopics = NewsObject.consult_Topics();
