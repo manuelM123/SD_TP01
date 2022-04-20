@@ -25,7 +25,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     private static RMIInterfaceLogin LoginObject;
     private static RMIInterfaceNews NewsObject;
     private static Person user = null;
-    Client C;
+    private static Client C;
 
     public Person getUser() throws RemoteException {
         return user;
@@ -37,7 +37,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     }
 
     public static void main(String[] args) {
-        Client C = null;
+        C = null;
         try {
             //method to bind server object to object in client (shared remote object)
             LoginObject = (RMIInterfaceLogin) Naming.lookup("RMIImplLogin");
@@ -245,6 +245,11 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
 
                     case 4:
                         System.out.println("Returning to login menu.");
+                        try {
+                            NewsObject.remove_callback_client(C);
+                        } catch (RemoteException e) {
+                            System.out.println(e.getMessage());
+                        }
                         break;
 
                     default:

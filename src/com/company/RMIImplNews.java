@@ -97,17 +97,21 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                 /**
                  * Sending callback to the proper subscriber
                  * */
+                ArrayList<ClientCallbackInterface> removeclientsCallback = new ArrayList<ClientCallbackInterface>();
                 for(ClientCallbackInterface c : clientsCallback){
                     try{
                         if(((Subscriber) (c.getUser())).getSubscribedTopics().contains(news.getTopic()))
                             c.showNotificationOnClient("You have a new news on topic "+news.getTopic()+".");
                     }catch (ConnectException e){
                         System.out.println("Cannot connect to client...");
-                        /**
-                         * unsubscribe client from logged in clients
-                         * */
+                        removeclientsCallback.add(c);
                     }
                 }
+                /**
+                 * unsubscribe client from logged in clients
+                 * */
+                if(removeclientsCallback.size() != 0)
+                    remove_callback_client(removeclientsCallback);
                 return true;
             }
         }
@@ -215,6 +219,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         }
         return backupIpPort;
     }
+
     public News latest_news_from_topic(String topic) throws RemoteException{
         News newsFromTopic = null;
         for (int i = NewsList.size()-1; i >= 0 ; i--) {
@@ -227,13 +232,18 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
     }
 
     @Override
-    public void showOnServer(String s) throws RemoteException {
-
-    }
-
-    @Override
     public void subscribe(ClientCallbackInterface client) throws RemoteException {
         System.out.println("Subscribing: " + client);
         clientsCallback.add(client);
+    }
+
+    public void remove_callback_client(ArrayList<ClientCallbackInterface> removeclientsCallback){
+        for(ClientCallbackInterface c : removeclientsCallback){
+            clientsCallback.remove(c);
+        }
+    }
+
+    public void remove_callback_client(ClientCallbackInterface removeclientsCallback) throws RemoteException{
+            clientsCallback.remove(removeclientsCallback);
     }
 }
