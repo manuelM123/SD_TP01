@@ -29,6 +29,8 @@ public class RMIServerNews {
             System.out.println(e.getMessage());
         }
         try{
+            String hostname = prop.getProperty("app.mainServerIp"); //hostname that resolves for a local address
+            System.setProperty("java.rmi.server.hostname",hostname);
             RMIInterfaceLogin login_remote = new RMIImplLogin();
             RMIInterfaceNews news_remote = new RMIImplNews();
             //register object in RMI registry

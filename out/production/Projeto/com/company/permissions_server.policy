@@ -5,4 +5,5 @@ grant {
     permission java.io.FilePermission  "src/com/company/newslist.bin", "read,write";
     permission java.io.FilePermission  "src/com/company/topics.bin", "read,write";
     permission java.io.FilePermission  "src/com/company/backupnews.bin", "read,write";
+    permission java.util.PropertyPermission  "java.rmi.server.hostname", "write";
 };
