@@ -26,7 +26,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
 
 
     protected RMIImplNews() throws RemoteException {
-        super();
+        super(1099);
         clientsCallback=new ArrayList<ClientCallbackInterface>();
         NewsList = new ArrayList<News>();
         Topics = new ArrayList<Topic>();
@@ -103,21 +103,32 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                 /**
                  * Sending callback to the proper subscriber
                  * */
-                ArrayList<ClientCallbackInterface> removeclientsCallback = new ArrayList<ClientCallbackInterface>();
-                for(ClientCallbackInterface c : clientsCallback){
-                    try{
-                        if(((Subscriber) (c.getUser())).getSubscribedTopics().contains(news.getTopic()))
-                            c.showNotificationOnClient("You have a new news on topic "+news.getTopic()+".");
-                    }catch (ConnectException e){
-                        System.out.println("Cannot connect to client...");
-                        removeclientsCallback.add(c);
+
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        ArrayList<ClientCallbackInterface> removeclientsCallback = new ArrayList<ClientCallbackInterface>();
+                        for(ClientCallbackInterface c : clientsCallback){
+                            try{
+                                if(((Subscriber) (c.getUser())).getSubscribedTopics().contains(news.getTopic()))
+                                    c.showNotificationOnClient("You have a new news on topic "+news.getTopic()+".");
+                            }catch (ConnectException e){
+                                System.out.println("Cannot connect to client...");
+                                removeclientsCallback.add(c);
+                            } catch (RemoteException e) {
+                                System.out.println("Remote timed out...");
+                            }
+                        }
+                        /**
+                         * unsubscribe client from logged in clients
+                         * */
+                        if(removeclientsCallback.size() != 0)
+                            remove_callback_client(removeclientsCallback);
                     }
-                }
-                /**
-                 * unsubscribe client from logged in clients
-                 * */
-                if(removeclientsCallback.size() != 0)
-                    remove_callback_client(removeclientsCallback);
+                }.start();
+                System.out.println("Thead:");
+                System.out.println(Thread.currentThread().getName());
                 return true;
             }
         }

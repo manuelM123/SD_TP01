@@ -157,8 +157,10 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                                 System.out.println("News not created!");
                                 System.out.println("Returning to menu...");
                             }else{
-                                System.out.println("News created!");
-                                NewsObject.add_News(n);
+                                if(NewsObject.add_News(n))
+                                    System.out.println("News created!");
+                                else
+                                    System.out.println("News failed to create!");
                             }
                         } catch (RemoteException e) {
                         System.out.println(e.getMessage());
