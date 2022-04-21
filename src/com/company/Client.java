@@ -42,8 +42,6 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        System.out.println(prop.getProperty("app.mainServerIp"));
-        System.out.println(prop.getProperty("app.mainServerPort"));
         try {
             //method to bind server object to object in client (shared remote object)
             LoginObject = (RMIInterfaceLogin) Naming.lookup("rmi://"+prop.getProperty("app.mainServerIp")+":"+prop.getProperty("app.mainServerPort")+"/RMIImplLogin");
