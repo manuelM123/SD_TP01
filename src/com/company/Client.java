@@ -94,9 +94,11 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         break;
                 }
             }while(option != 4);
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        System.exit(0);
     }
 
     public static void Login_menu(){
@@ -368,25 +370,26 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return P;
     }
 
-    /*public ArrayList<String> Credentials_menu(){
-        System.out.println("Insert Username");
-        String username = Ler.umaString();
-
-        System.out.println("Insert Password");
-        String password = Ler.umaString();
-
-        ArrayList<String> credentials = new ArrayList<String>();
-        credentials.add(username);
-        credentials.add(password);
-
-        return credentials;
-    }*/
 
     public static News createNews(){
         News n = new News();
         String s;
         System.out.println("Insert topic:");
-        n.setTopic(Ler.umaString());
+        int opcao;
+        try {
+            ArrayList<String> topicsList=NewsObject.consult_Topics();
+            for (int i = 0; i < topicsList.size(); i++) {
+                System.out.println((i+1) + " - " + topicsList.get(i));
+            }
+            do{
+                opcao=Ler.umInt();
+
+            }while(opcao<0 || opcao > topicsList.size());
+            n.setTopic(topicsList.get(opcao-1));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
         System.out.println("Insert title:");
         n.setTitle(Ler.umaString());
         do {

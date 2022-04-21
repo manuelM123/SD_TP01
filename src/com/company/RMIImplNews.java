@@ -19,6 +19,9 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
     public static int TOPICSREAD = 4;
     public static int BACKUPWRITE = 5;
     private static ArrayList<ClientCallbackInterface> clientsCallback;
+    private ObjectInputStream inputNewsList, inputBackup, inputTopics;
+    private ObjectOutputStream outputNewsList, outputBackup, outputTopics;
+
 
     protected RMIImplNews() throws RemoteException {
         super();
@@ -38,7 +41,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         readWriteFile(TOPICSREAD,null);
     }
 
-    public boolean add_Topic(String Topic) throws RemoteException {
+    public synchronized boolean add_Topic(String Topic) throws RemoteException {
         for (Topic t : Topics) {
             if(t.getName().equalsIgnoreCase(Topic))
                 return false;
@@ -56,7 +59,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return topicsNames;
     }
 
-    public boolean add_News(News news) throws RemoteException{
+    public synchronized boolean add_News(News news) throws RemoteException{
         /**
         * Check if limit of news' topic has been reached
         * if true: 50% of the news on that topic will go to backup
@@ -125,6 +128,25 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                 publisherNews.add(n);
             }
         }
+        News backupNews;
+        ObjectInputStream is=null;
+
+        try {
+
+            is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
+            Object obj = null;
+            while( (obj = is.readObject()) != null)
+            {
+                backupNews = (News) obj;
+                if(P.getUsername().equals(backupNews.getPublisher().getUsername())){
+                    publisherNews.add(backupNews);
+                }
+            }
+            is.close();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
         return publisherNews;
     }
 
@@ -186,6 +208,8 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     System.out.println(e.getMessage());
                 }
                 break;
+            case 6:
+                break;
         }
     }
 
@@ -214,6 +238,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     return backupIpPort;
                 }
             }
+            is.close();
         } catch (IOException | ClassNotFoundException e) {
             System.out.println(e.getMessage());
         }
@@ -232,18 +257,18 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
     }
 
     @Override
-    public void subscribe(ClientCallbackInterface client) throws RemoteException {
+    public synchronized void subscribe(ClientCallbackInterface client) throws RemoteException {
         System.out.println("Subscribing: " + client);
         clientsCallback.add(client);
     }
 
-    public void remove_callback_client(ArrayList<ClientCallbackInterface> removeclientsCallback){
+    public synchronized void remove_callback_client(ArrayList<ClientCallbackInterface> removeclientsCallback){
         for(ClientCallbackInterface c : removeclientsCallback){
             clientsCallback.remove(c);
         }
     }
 
-    public void remove_callback_client(ClientCallbackInterface removeclientsCallback) throws RemoteException{
+    public synchronized void remove_callback_client(ClientCallbackInterface removeclientsCallback) throws RemoteException{
             clientsCallback.remove(removeclientsCallback);
     }
 }
