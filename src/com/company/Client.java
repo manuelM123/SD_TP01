@@ -46,8 +46,8 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         System.out.println(prop.getProperty("app.mainServerPort"));
         try {
             //method to bind server object to object in client (shared remote object)
-            LoginObject = (RMIInterfaceLogin) Naming.lookup("rmi://"+prop.getProperty("app.mainServerIp")+":"+prop.getProperty("app.mainServerPort")+"RMIImplLogin");
-            NewsObject = (RMIInterfaceNews) Naming.lookup("rmi://"+prop.getProperty("app.mainServerIp")+":"+prop.getProperty("app.mainServerPort")+"RMIImplNews");
+            LoginObject = (RMIInterfaceLogin) Naming.lookup("rmi://"+prop.getProperty("app.mainServerIp")+":"+prop.getProperty("app.mainServerPort")+"/RMIImplLogin");
+            NewsObject = (RMIInterfaceNews) Naming.lookup("rmi://"+prop.getProperty("app.mainServerIp")+":"+prop.getProperty("app.mainServerPort")+"/RMIImplNews");
             C = new Client();
         } catch (RemoteException | MalformedURLException | NotBoundException e) {
             System.out.println(e.getMessage());
