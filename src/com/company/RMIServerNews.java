@@ -21,7 +21,7 @@ public class RMIServerNews {
             RMIInterfaceNews news_remote = new RMIImplNews();
 
             //register object in RMI registry
-            Naming.rebind("RMIImplLogin",login_remote);
+            Naming.rebind("rmi://"++"RMIImplLogin",login_remote);
             Naming.rebind("RMIImplNews",news_remote);
             System.out.println("Remote object ready");
         }catch (RemoteException | MalformedURLException e){
