@@ -2,9 +2,7 @@ package com.company;
 
 import com.myinputs.Ler;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -15,10 +13,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 
 public class Client extends java.rmi.server.UnicastRemoteObject implements ClientCallbackInterface{
@@ -26,6 +21,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     private static RMIInterfaceNews NewsObject;
     private static Person user = null;
     private static Client C;
+    private static Properties prop;
 
     public Person getUser() throws RemoteException {
         return user;
@@ -38,6 +34,16 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
 
     public static void main(String[] args) {
         C = null;
+        prop = new Properties();
+        try (FileInputStream fis = new FileInputStream("src/com/company/app.config")) {
+            prop.load(fis);
+        } catch (EOFException ex){
+            System.out.println("App.config file was read.");
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.println(prop.getProperty("app.mainServerIp"));
+        System.out.println(prop.getProperty("app.mainServerPort"));
         try {
             //method to bind server object to object in client (shared remote object)
             LoginObject = (RMIInterfaceLogin) Naming.lookup("RMIImplLogin");
