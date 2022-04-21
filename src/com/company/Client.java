@@ -167,6 +167,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         break;
 
                     case 4:
+
                         try{
                             ArrayList<News> newsArrayList = NewsObject.consult_news_publisher(user);
                             for(News n : newsArrayList){
@@ -175,6 +176,27 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         }catch (RemoteException e){
                             System.out.println(e.getMessage());
                         }
+                        ArrayList<String> backupIpPort = null;
+                        ArrayList<News>BackupsNewsList= new ArrayList<News>();
+                        try {
+                            backupIpPort = NewsObject.news_from_backup(user.getUsername());
+                            if(backupIpPort.size() != 0){
+                                System.out.println("There are news in the arquive.");
+                                System.out.println("Do you want to see it? (Yes or No)");
+                                String s = Ler.umaString();
+                                if(s.equalsIgnoreCase("yes")){
+                                    BackupsNewsList = news_from_backup_publisher(backupIpPort.get(0),backupIpPort.get(1));
+                                    for(News n: BackupsNewsList){
+                                        System.out.println(n.toString());
+                                    }
+                                }
+                            }else{
+                                System.out.println("No news in the arquive in that timestamp.");
+                            }
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+
                         break;
 
                     case 5:
@@ -494,6 +516,29 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             os.writeObject(start);
             os.flush();
             os.writeObject(end);
+            os.flush();
+            newsListFromBackup = (ArrayList<News>) is.readObject();
+            os.close();
+            is.close();
+            return newsListFromBackup;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return newsListFromBackup;
+    }
+
+    public static ArrayList<News> news_from_backup_publisher(String ip,String port){
+        Socket S = null;
+        ArrayList<News> newsListFromBackup = new ArrayList<News>();
+        try {
+            S = new Socket(ip,Integer.parseInt(port));
+            ObjectOutputStream os = new ObjectOutputStream(S.getOutputStream());
+            ObjectInputStream is = new ObjectInputStream(S.getInputStream());
+            os.writeObject(null);
+            os.flush();
+            os.writeObject(null);
+            os.flush();
+            os.writeObject(user.getUsername());
             os.flush();
             newsListFromBackup = (ArrayList<News>) is.readObject();
             os.close();

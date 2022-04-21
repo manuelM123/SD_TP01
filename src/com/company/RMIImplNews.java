@@ -131,14 +131,22 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                 publisherNews.add(n);
             }
         }
+        return publisherNews;
+    }
+
+
+    public ArrayList<String> news_from_backup(String username) throws RemoteException{
+        ArrayList<String> backupIpPort = new ArrayList<String>();
         readWriteFile(BACKUPREAD,null);
         for(News backupNews: BackupNewsList){
-            if(P.getUsername().equals(backupNews.getPublisher().getUsername())){
-                publisherNews.add(backupNews);
+            if(username.equals(backupNews.getPublisher().getUsername())){
+                backupIpPort.add(prop.getProperty("app.backupIp"));
+                backupIpPort.add(prop.getProperty("app.backupPort"));
+                return backupIpPort;
             }
         }
         BackupNewsList.clear();
-        return publisherNews;
+        return backupIpPort;
     }
 
     private synchronized void readWriteFile(int i, ArrayList<News> nArrayList){
@@ -233,6 +241,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         }
         return newsFromTimestamp;
     }
+
 
     public ArrayList<String> news_from_timestamp_backup(Date start, Date end, String topic) throws RemoteException{
         ArrayList<String> backupIpPort = new ArrayList<String>();

@@ -38,7 +38,15 @@ public class BackupConnection extends Thread{
         try{
             Date start = (Date) is.readObject();
             Date end = (Date) is.readObject();
-            ArrayList<News> backupNewsFromTimestamp = news_from_timestamp_backup(start,end);
+            ArrayList<News> backupNewsFromTimestamp=new ArrayList<News>();
+            if(start==null && end==null){
+                String username= (String) is.readObject();
+                backupNewsFromTimestamp=news_from_backup_publisher(username);
+
+            }else{
+                backupNewsFromTimestamp = news_from_timestamp_backup(start,end);
+            }
+
             os.writeObject(backupNewsFromTimestamp);
             os.flush();
             os.close();
@@ -51,6 +59,15 @@ public class BackupConnection extends Thread{
         ArrayList<News> backupNewsFromTimestamp = new ArrayList<News>();
         for(News n: backupNewsList){
             if(n.getTimestamp().after(start) && n.getTimestamp().before(end))
+                backupNewsFromTimestamp.add(n);
+        }
+        return backupNewsFromTimestamp;
+    }
+
+    public ArrayList<News>news_from_backup_publisher(String username){
+        ArrayList<News> backupNewsFromTimestamp = new ArrayList<News>();
+        for(News n: backupNewsList){
+            if(username.equals(n.getPublisher().getUsername()))
                 backupNewsFromTimestamp.add(n);
         }
         return backupNewsFromTimestamp;
