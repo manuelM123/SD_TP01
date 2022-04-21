@@ -7,3 +7,17 @@ grant {
     permission java.io.FilePermission  "src/com/company/backupnews.bin", "read,write";
     permission java.util.PropertyPermission  "java.rmi.server.hostname", "write";
 };
+grant {
+    /* Required to allow the proxy to read the rmi.proxyHosts &c properties.
+    Servers & clients will also need this permission if running under a security manager.*/
+    permission java.util.PropertyPermission "rmi.*", "read";
+
+    /* Required by the proxy for internal reasons.*/
+    permission java.lang.RuntimePermission "accessClassInPackage.sun.rmi.server";
+
+    /* Required by the proxy for internal reasons.*/
+    permission java.lang.RuntimePermission "accessClassInPackage.sun.rmi.transport";
+
+    /* Required by the proxy for internal reasons.*/
+    permission java.lang.RuntimePermission "getProtectionDomain";
+};

@@ -263,6 +263,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
     public synchronized void subscribe(ClientCallbackInterface client) throws RemoteException {
         System.out.println("Subscribing: " + client);
         clientsCallback.add(client);
+        client.showNotificationOnClient("I connected.");
     }
 
     public synchronized void remove_callback_client(ArrayList<ClientCallbackInterface> removeclientsCallback){
