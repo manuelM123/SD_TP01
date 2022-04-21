@@ -12,12 +12,14 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
 
     private ArrayList<News> NewsList;
     private ArrayList<Topic> Topics;
+    private ArrayList<News> BackupNewsList;
     private Properties prop;
     public static int NEWSLISTWRITE = 1;
     public static int TOPICSWRITE = 2;
     public static int NEWSLISTREAD = 3;
     public static int TOPICSREAD = 4;
     public static int BACKUPWRITE = 5;
+    public static int BACKUPREAD = 6;
     private static ArrayList<ClientCallbackInterface> clientsCallback;
     private ObjectInputStream inputNewsList, inputBackup, inputTopics;
     private ObjectOutputStream outputNewsList, outputBackup, outputTopics;
@@ -28,6 +30,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         clientsCallback=new ArrayList<ClientCallbackInterface>();
         NewsList = new ArrayList<News>();
         Topics = new ArrayList<Topic>();
+        BackupNewsList = new ArrayList<News>();
         prop = new Properties();
         try (FileInputStream fis = new FileInputStream("src/com/company/app.config")) {
             prop.load(fis);
@@ -84,12 +87,12 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                         if(removed == limit/2)
                             break;
                         else if(n.getTopic().equalsIgnoreCase(t.getName())){
-                            readWriteFile(BACKUPWRITE,n);
                             newsToRemove.add(n);
                             removed++;
                         }
                     }
                 }
+                readWriteFile(BACKUPWRITE,newsToRemove);
                 for(News n: newsToRemove){
                     NewsList.remove(n);
                 }
@@ -128,29 +131,17 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                 publisherNews.add(n);
             }
         }
-        News backupNews;
-        ObjectInputStream is=null;
-
-        try {
-
-            is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
-            Object obj = null;
-            while( (obj = is.readObject()) != null)
-            {
-                backupNews = (News) obj;
-                if(P.getUsername().equals(backupNews.getPublisher().getUsername())){
-                    publisherNews.add(backupNews);
-                }
+        readWriteFile(BACKUPREAD,null);
+        for(News backupNews: BackupNewsList){
+            if(P.getUsername().equals(backupNews.getPublisher().getUsername())){
+                publisherNews.add(backupNews);
             }
-            is.close();
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
         }
+        BackupNewsList.clear();
         return publisherNews;
     }
 
-    private void readWriteFile(int i, News n){
+    private synchronized void readWriteFile(int i, ArrayList<News> nArrayList){
         ObjectOutputStream os = null;
         ObjectInputStream is = null;
         switch (i){
@@ -199,16 +190,37 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                 }
                 break;
             case 5:
+                BackupNewsList = new ArrayList<>();
+                try{
+                    is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
+                    BackupNewsList = (ArrayList<News>) is.readObject();
+                }catch (ClassNotFoundException | FileNotFoundException e){
+                    System.out.println(e.getMessage());
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+                BackupNewsList.addAll(nArrayList);
                 try {
-                    os = new ObjectOutputStream(new FileOutputStream("src/com/company/backupnews.bin",true));
-                    os.writeObject(n);
+                    os = new ObjectOutputStream(new FileOutputStream("src/com/company/backupnews.bin"));
+                    os.writeObject(BackupNewsList);
                     os.flush();
                     os.close();
+                    is.close();
+                    BackupNewsList.clear();
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
                 break;
             case 6:
+                BackupNewsList = new ArrayList<>();
+                try {
+                    is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
+                    Object obj = is.readObject();
+                    BackupNewsList = (ArrayList<News>) obj;
+                    is.close();
+                } catch (IOException | ClassNotFoundException e) {
+                    System.out.println(e.getMessage());
+                }
                 break;
         }
     }
@@ -224,24 +236,15 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
 
     public ArrayList<String> news_from_timestamp_backup(Date start, Date end, String topic) throws RemoteException{
         ArrayList<String> backupIpPort = new ArrayList<String>();
-        ObjectInputStream is = null;
-        News backupNews = null;
-        try {
-            is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
-            Object obj = null;
-            while( (obj = is.readObject()) != null)
-            {
-                backupNews = (News) obj;
-                if(backupNews.getTimestamp().after(start) && backupNews.getTimestamp().before(end) && backupNews.getTopic().equalsIgnoreCase(topic)){
-                    backupIpPort.add(prop.getProperty("app.backupIp"));
-                    backupIpPort.add(prop.getProperty("app.backupPort"));
-                    return backupIpPort;
-                }
+        readWriteFile(BACKUPREAD,null);
+        for(News backupNews: BackupNewsList){
+            if(backupNews.getTimestamp().after(start) && backupNews.getTimestamp().before(end) && backupNews.getTopic().equalsIgnoreCase(topic)){
+                backupIpPort.add(prop.getProperty("app.backupIp"));
+                backupIpPort.add(prop.getProperty("app.backupPort"));
+                return backupIpPort;
             }
-            is.close();
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println(e.getMessage());
         }
+        BackupNewsList.clear();
         return backupIpPort;
     }
 

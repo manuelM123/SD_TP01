@@ -28,10 +28,11 @@ public class BackupServer {
         while (true){
             try {
                 S = SS.accept();
+                BC = new BackupConnection(S);
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
-            BC = new BackupConnection(S);
+
         }
 
     }

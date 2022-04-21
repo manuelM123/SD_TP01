@@ -16,11 +16,7 @@ public class BackupConnection extends Thread{
         this.S = S;
         try {
             is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
-            Object obj = null;
-            while((obj = is.readObject()) != null)
-            {
-                backupNewsList.add((News) obj);
-            }
+            backupNewsList = (ArrayList<News>) is.readObject();
             is.close();
         }catch (EOFException ex){
             System.out.println("Backup News file was read.");
