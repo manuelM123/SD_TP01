@@ -3,7 +3,9 @@ package com.company;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -25,8 +27,9 @@ public class RMIServerNews {
         }
         try{
             java.rmi.registry.LocateRegistry.createRegistry(Integer.parseInt(prop.getProperty("app.mainServerPort")));
+            System.out.println(InetAddress.getLocalHost());
             System.out.println("News Server Ready");
-        } catch (RemoteException e) {
+        } catch (RemoteException | UnknownHostException e) {
             e.printStackTrace();
         }
         try{

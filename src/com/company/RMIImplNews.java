@@ -6,8 +6,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
-
-
 public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews {
 
     private ArrayList<News> NewsList;
