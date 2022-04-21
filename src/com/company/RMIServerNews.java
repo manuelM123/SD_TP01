@@ -6,18 +6,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Properties;
 
 public class RMIServerNews {
     public static void main(String[] args) {
         System.setSecurityManager(new SecurityManager());
-        try{
-            java.rmi.registry.LocateRegistry.createRegistry(5433);
-            System.out.println("News Server Ready");
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
         Properties prop;
         //instantiate remote object
         prop = new Properties();
@@ -27,6 +22,12 @@ public class RMIServerNews {
             System.out.println("App.config file was read.");
         } catch (IOException e) {
             System.out.println(e.getMessage());
+        }
+        try{
+            java.rmi.registry.LocateRegistry.createRegistry(Integer.parseInt(prop.getProperty("app.mainServerPort")));
+            System.out.println("News Server Ready");
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
         try{
             String hostname = prop.getProperty("app.mainServerIp"); //hostname that resolves for a local address
