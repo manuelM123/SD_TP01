@@ -35,7 +35,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     public static void main(String[] args) {
         C = null;
         prop = new Properties();
-        try (FileInputStream fis = new FileInputStream("src/com/company/app.config")) {
+        try (FileInputStream fis = new FileInputStream("src/com/company/client.config")) {
             prop.load(fis);
         } catch (EOFException ex){
             System.out.println("App.config file was read.");
