@@ -29,6 +29,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
 
     public Client() throws RemoteException{
         super();
+        System.setProperty("java.security.policy","src/com/company/permissions_client.policy");
         System.setSecurityManager(new SecurityManager());
     }
 
@@ -508,7 +509,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return daysInMonth;
     }
 
-    public static ArrayList<News> news_from_backup(Date start, Date end, String ip, String port){
+    public static ArrayList<News> news_from_backup(Date start, Date end, String ip, String port, String topic){
         Socket S = null;
         ArrayList<News> newsListFromBackup = new ArrayList<News>();
         try {
@@ -518,6 +519,8 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             os.writeObject(start);
             os.flush();
             os.writeObject(end);
+            os.flush();
+            os.writeObject(topic);
             os.flush();
             newsListFromBackup = (ArrayList<News>) is.readObject();
             os.close();
@@ -597,7 +600,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         System.out.println("Do you want to see it? (Yes or No)");
                         String s = Ler.umaString();
                         if(s.equalsIgnoreCase("yes")){
-                            newsFromTimestamp = news_from_backup(date1,date2,backupIpPort.get(0),backupIpPort.get(1));
+                            newsFromTimestamp = news_from_backup(date1,date2,backupIpPort.get(0),backupIpPort.get(1),topic);
                             for(News n: newsFromTimestamp){
                                 System.out.println(n.toString());
                             }

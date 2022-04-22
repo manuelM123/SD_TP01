@@ -14,6 +14,7 @@ import java.util.Properties;
 
 public class RMIServerNews {
     public static void main(String[] args) {
+        System.setProperty("java.security.policy","src/com/company/permissions_server.policy");
         System.setSecurityManager(new SecurityManager());
         Properties prop;
         //instantiate remote object
