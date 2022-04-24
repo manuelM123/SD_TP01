@@ -17,7 +17,7 @@ public class RMIServerNews {
         System.setProperty("java.security.policy","src/com/company/permissions_server.policy");
         System.setSecurityManager(new SecurityManager());
         Properties prop;
-        //instantiate remote object
+        //get the properties from .config file
         prop = new Properties();
         try (FileInputStream fis = new FileInputStream("src/com/company/app.config")) {
             prop.load(fis);
@@ -34,12 +34,12 @@ public class RMIServerNews {
             e.printStackTrace();
         }
         try{
-            String hostname = prop.getProperty("app.mainServerIp"); //hostname that resolves for a local address
+            String hostname = prop.getProperty("app.mainServerIp");
             System.setProperty("java.rmi.server.hostname",hostname);
             RMIInterfaceLogin login_remote = new RMIImplLogin();
             RMIInterfaceNews news_remote = new RMIImplNews();
-            //register object in RMI registry
 
+            //register object in RMI registry
             Naming.rebind("rmi://"+prop.getProperty("app.mainServerIp")+":"+prop.getProperty("app.mainServerPort")+"/RMIImplLogin",login_remote);
             Naming.rebind("rmi://"+prop.getProperty("app.mainServerIp")+":"+prop.getProperty("app.mainServerPort")+"/RMIImplNews",news_remote);
             System.out.println("Remote object ready");

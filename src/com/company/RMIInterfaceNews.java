@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public interface RMIInterfaceNews extends java.rmi.Remote{
-    //methods to add in future
     public boolean add_Topic(String Topic) throws RemoteException;
     public ArrayList<String> consult_Topics() throws RemoteException;
     public boolean add_News(News news) throws RemoteException;

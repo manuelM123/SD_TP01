@@ -36,6 +36,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     public static void main(String[] args) {
         C = null;
         prop = new Properties();
+        //Load the properties from .config file
         try (FileInputStream fis = new FileInputStream("src/com/company/client.config")) {
             prop.load(fis);
         } catch (EOFException ignored){
@@ -90,7 +91,6 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     case 3:
                         Menu_Role("");
                         break;
-
                     case 4:
                         System.out.println("Exiting...");
                         break;
@@ -107,6 +107,9 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         System.exit(0);
     }
 
+    /**
+     * Show the login menu
+     */
     public static void Login_menu(){
         System.out.println("1- Login");
         System.out.println("2- Register");
@@ -115,6 +118,10 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         System.out.println("-----------------------");
     }
 
+    /**
+     * Resolves all the methods that a user with a specific role can do
+     * @param role the user role
+     */
     public static void Menu_Role(String role){
         int option = 0;
         if(role.equals("Publisher")){
@@ -144,8 +151,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     case 2:
                         try {
                             ArrayList<String> topicsList = NewsObject.consult_Topics();
-                            for(String t: topicsList){
-                                System.out.println(" - " + t);
+                            if(topicsList.size()!=0){
+                                for(String t: topicsList){
+                                    System.out.println(" - " + t);
+                                }
+                            }else{
+                                System.out.println("No topics available!");
                             }
                         } catch (RemoteException e) {
                             System.out.println(e.getMessage());
@@ -171,7 +182,6 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         break;
 
                     case 4:
-
                         try{
                             ArrayList<News> newsArrayList = NewsObject.consult_news_publisher(user);
                             for(News n : newsArrayList){
@@ -236,7 +246,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                             currentTopics = NewsObject.consult_Topics();
                             subscribedTopics = ((Subscriber) user).getSubscribedTopics();
                             if(currentTopics.size() == 0 || currentTopics.size() == subscribedTopics.size()) {
-                                System.out.println("No topics available");
+                                System.out.println("No topics available!");
                                 break;
                             }
                             System.out.println("Choose a topic from the list:");
@@ -321,6 +331,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }
     }
 
+    /**
+     * Login Method.
+     * When the user insert the username the system check on the server if it exists. If exists, the user is asked to insert the password and then all credentials are checked by the server
+     * @return null if the login failed or the user if login is successful
+     * @throws RemoteException
+     */
     public static Person Login_methods() throws RemoteException {
         String username;
         System.out.println("Insert username");
@@ -344,6 +360,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return null;
     }
 
+    /**
+     * Register Method
+     * Ask the user to insert all informations to register the user.
+     * @return the user or null if that username already exists
+     * @throws RemoteException
+     */
     public static Person Register_Methods() throws RemoteException {
         System.out.println("Insert name: ");
         String name = Ler.umaString();
@@ -356,7 +378,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
 
         System.out.println("-----------------------");
 
-        //see in future implementation to keep input of data until it's right or user cancels operation
+        //Check if the username already exists
         if(LoginObject.Username(username)){
             System.out.println("Username already exists!");
             return null;
@@ -401,13 +423,20 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return P;
     }
 
-
+    /**
+     * Create the news.
+     * @return the news or null if operation is canceled.
+     */
     public static News createNews(){
         News n = new News();
         String s;
         int opcao;
         try {
             ArrayList<String> topicsList=NewsObject.consult_Topics();
+            if(topicsList.size()==0){
+                System.out.println("No topics available!");
+                return null;
+            }
             System.out.println("Insert topic:");
             if(topicsList.size() != 0) {
                 System.out.println("0 - Cancel operation.");
@@ -456,6 +485,10 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return n;
     }
 
+    /**
+     * Ask the user to insert a date and check if the date isn't greater than the actual date
+     * @return the date
+     */
     public static Date insertDate(){
         int year,month,day,hours,minutes,seconds;
         SimpleDateFormat sourceDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -509,6 +542,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return date;
     }
 
+    /**
+     * get the number of days of a month
+     * @param month the month
+     * @param year the year
+     * @return the number of days
+     */
     public static int getMonthDays(int month, int year) {
         int daysInMonth ;
         if (month == 4 || month == 6 || month == 9 || month == 11) {
@@ -524,6 +563,15 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return daysInMonth;
     }
 
+    /**
+     * For the subscribers or non-login: Establish connection with backup server to check if there is news from a topic in archive
+     * @param start the first date
+     * @param end the second date
+     * @param ip the backup server ip
+     * @param port the backup server port
+     * @param topic the specific topic
+     * @return the news from backup that check all requirements
+     */
     public static ArrayList<News> news_from_backup(Date start, Date end, String ip, String port, String topic){
         Socket S = null;
         ArrayList<News> newsListFromBackup = new ArrayList<News>();
@@ -547,6 +595,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return newsListFromBackup;
     }
 
+    /**
+     * For the Publishers: Establish connection with backup server to check if there is news published by him in archive
+     * @param ip the backup server ip
+     * @param port the backup server port
+     * @return
+     */
     public static ArrayList<News> news_from_backup_publisher(String ip,String port){
         Socket S = null;
         ArrayList<News> newsListFromBackup = new ArrayList<News>();
@@ -570,10 +624,17 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return newsListFromBackup;
     }
 
+    /**
+     * Show the news from a specific topic and timestamp
+     */
     public static void view_news_from_topic_timestamp(){
         try {
             ArrayList<String> allTopics;
             allTopics = NewsObject.consult_Topics();
+            if(allTopics.size()==0){
+                System.out.println("No topics available!");
+                return;
+            }
             System.out.println("Choose a topic from the list:");
             System.out.println("0 - Cancel operation.");
             for (int i = 0; i < allTopics.size(); i++) {
@@ -632,10 +693,17 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }
     }
 
+    /**
+     * Show the last news from a specific topic
+     */
     public static void view_last_news_from_topic(){
         try {
             ArrayList<String> allTopics;
             allTopics = NewsObject.consult_Topics();
+            if(allTopics.size()==0){
+                System.out.println("No topics available!");
+                return;
+            }
             System.out.println("Choose a topic from the list:");
             System.out.println("0 - Cancel operation.");
             for (int i = 0; i < allTopics.size(); i++) {
@@ -662,6 +730,11 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }
     }
 
+    /**
+     * Show the notification on client
+     * @param s The message to show
+     * @throws RemoteException
+     */
     @Override
     public void showNotificationOnClient(String s) throws RemoteException {
         System.out.println(s);

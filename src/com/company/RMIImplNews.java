@@ -37,11 +37,16 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        System.out.println(prop.getProperty("app.topicLimit"));
         readWriteFile(NEWSLISTREAD,null);
         readWriteFile(TOPICSREAD,null);
     }
 
+    /**
+     * add a Topic
+     * @param Topic the topic's name to add
+     * @return true if the topic was added or false if not
+     * @throws RemoteException
+     */
     public synchronized boolean add_Topic(String Topic) throws RemoteException {
         for (Topic t : Topics) {
             if(t.getName().equalsIgnoreCase(Topic))
@@ -52,6 +57,11 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return true;
     }
 
+    /**
+     * Consult all topics
+     * @return the topics list
+     * @throws RemoteException
+     */
     public ArrayList<String> consult_Topics() throws RemoteException{
         ArrayList<String> topicsNames = new ArrayList<String>();
         for (Topic t : Topics) {
@@ -60,6 +70,12 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return topicsNames;
     }
 
+    /**
+     * add a news. if the topic limit is reached, 50% goes to the backup
+     * @param news the news to add
+     * @return true if the news was added successfuly or false if it wasn't added
+     * @throws RemoteException
+     */
     public synchronized boolean add_News(News news) throws RemoteException{
         /**
         * Check if limit of news' topic has been reached
@@ -90,13 +106,20 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                         }
                     }
                 }
-                readWriteFile(BACKUPWRITE,newsToRemove);
-                for(News n: newsToRemove){
-                    NewsList.remove(n);
+                System.out.println("1");
+                if(newsToRemove.size()!=0){
+                    System.out.println("2");
+                    readWriteFile(BACKUPWRITE,newsToRemove);
+                    for(News n: newsToRemove){
+                        NewsList.remove(n);
+                    }
                 }
+
                 news.setTimestamp(new Date());
                 NewsList.add(news);
+                System.out.println("3");
                 readWriteFile(NEWSLISTWRITE,null);
+                System.out.println("4");
                 readWriteFile(TOPICSWRITE,null);
                 /**
                  * Sending callback to the proper subscriber
@@ -125,14 +148,18 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                             remove_callback_client(removeclientsCallback);
                     }
                 }.start();
-                System.out.println("Thead:");
-                System.out.println(Thread.currentThread().getName());
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Consult the publisher's news's
+     * @param P the publisher (user)
+     * @return the list of published news's
+     * @throws RemoteException
+     */
     public ArrayList<News> consult_news_publisher(Person P) throws RemoteException{
         ArrayList<News> publisherNews = new ArrayList<News>();
         for (News n : NewsList) {
@@ -143,7 +170,12 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return publisherNews;
     }
 
-
+    /**
+     * Check if a user (publisher) has news in the backup. If it has return a list with backup ip and port
+     * @param username the user's username
+     * @return an empty list (if the user hasn't news in the backup) or a list with backup ip and port
+     * @throws RemoteException
+     */
     public ArrayList<String> news_from_backup(String username) throws RemoteException{
         ArrayList<String> backupIpPort = new ArrayList<String>();
         readWriteFile(BACKUPREAD,null);
@@ -158,6 +190,11 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return backupIpPort;
     }
 
+    /**
+     * Write or read from a file
+     * @param i the operation to execute
+     * @param nArrayList used when are news's to be written in the backup's file or null in the other cases
+     * */
     private synchronized void readWriteFile(int i, ArrayList<News> nArrayList){
         ObjectOutputStream os = null;
         ObjectInputStream is = null;
@@ -168,8 +205,6 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     os.writeObject(NewsList);
                     os.flush();
                     os.close();
-                }catch(EOFException ignored){
-
                 }catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -180,8 +215,6 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     os.writeObject(Topics);
                     os.flush();
                     os.close();
-                }catch(EOFException ignored){
-
                 }catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -228,8 +261,6 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     os.close();
                     is.close();
                     BackupNewsList.clear();
-                }catch(EOFException ignored){
-
                 }catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -250,6 +281,14 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         }
     }
 
+    /**
+     * get the news's from a timestamp and a specific topic.
+     * @param start the first date
+     * @param end the end date
+     * @param topic the specific topic
+     * @return a list with all the news's between that timestamp and topic «
+     * @throws RemoteException
+     */
     public ArrayList<News> news_from_timestamp(Date start, Date end, String topic) throws RemoteException{
         ArrayList<News> newsFromTimestamp = new ArrayList<News>();
         for(News n: NewsList){
@@ -259,7 +298,14 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return newsFromTimestamp;
     }
 
-
+    /**
+     * Check if the backup's server has news in a specific timestamp and topic. If it has return a list with backup ip and port
+     * @param start the first date
+     * @param end the end date
+     * @param topic the specific topic
+     * @return an empty list (if there isn´t any news in the backup) or a list with backup ip and port
+     * @throws RemoteException
+     */
     public ArrayList<String> news_from_timestamp_backup(Date start, Date end, String topic) throws RemoteException{
         ArrayList<String> backupIpPort = new ArrayList<String>();
         readWriteFile(BACKUPREAD,null);
@@ -274,6 +320,12 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return backupIpPort;
     }
 
+    /**
+     * Get the latest news from a specific topic
+     * @param topic a specific topic
+     * @return the last news
+     * @throws RemoteException
+     */
     public News latest_news_from_topic(String topic) throws RemoteException{
         News newsFromTopic = null;
         for (int i = NewsList.size()-1; i >= 0 ; i--) {
@@ -285,17 +337,31 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         return null;
     }
 
+    /**
+     * Subscribe a client to receive notification's
+     * @param client
+     * @throws RemoteException
+     */
     @Override
     public void subscribe(ClientCallbackInterface client) throws RemoteException {
         clientsCallback.add(client);
     }
 
+    /**
+     * remove all client's from callback
+     * @param removeclientsCallback
+     */
     public synchronized void remove_callback_client(ArrayList<ClientCallbackInterface> removeclientsCallback){
         for(ClientCallbackInterface c : removeclientsCallback){
             clientsCallback.remove(c);
         }
     }
 
+    /**
+     * remove one client from callback
+     * @param removeclientsCallback
+     * @throws RemoteException
+     */
     public synchronized void remove_callback_client(ClientCallbackInterface removeclientsCallback) throws RemoteException{
             clientsCallback.remove(removeclientsCallback);
     }

@@ -13,6 +13,7 @@ public class BackupServer {
     private Socket S;
     private BackupConnection BC;
 
+
     public BackupServer(){
         prop = new Properties();
         try (FileInputStream fis = new FileInputStream("src/com/company/app.config")) {

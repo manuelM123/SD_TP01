@@ -29,6 +29,12 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
         }
     }
 
+    /**
+     * Check if the username exists
+     * @param username the username to check
+     * @return true if the username exists or false if not
+     * @throws RemoteException
+     */
     @Override
     public boolean Username(String username) throws RemoteException {
         for(int i=0; i < users.size(); i++){
@@ -38,6 +44,13 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
         return false;
     }
 
+    /**
+     * check if a user has that username and password. if he has returns the person, if not return null
+     * @param username the username
+     * @param password the password
+     * @return null or the person
+     * @throws RemoteException
+     */
     @Override
     public Person Password(String username, String password) throws RemoteException {
         for(int i=0; i < users.size(); i++){
@@ -48,12 +61,22 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
         return null;
     }
 
+    /**
+     * add the user to the list of user's and save it to a file
+     * @param P the person (user)
+     * @throws RemoteException
+     */
     @Override
     public void Register(Person P) throws RemoteException {
         users.add(P);
         saveUsers();
     }
 
+    /**
+     * add a topic to a specific user, and save the user's to the file
+     * @param P the user
+     * @throws RemoteException
+     */
     @Override
     public void addTopic(Person P) throws RemoteException {
         for(Person user: users){
@@ -63,6 +86,9 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
         saveUsers();
     }
 
+    /**
+     * Save the users to a file (users.bin)
+     */
     private void saveUsers(){
         try {
             ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream("src/com/company/users.bin"));

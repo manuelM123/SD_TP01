@@ -39,6 +39,7 @@ public class BackupConnection extends Thread{
             Date start = (Date) is.readObject();
             Date end = (Date) is.readObject();
             ArrayList<News> backupNewsFromTimestamp=new ArrayList<News>();
+
             if(start==null && end==null){
                 String username= (String) is.readObject();
                 backupNewsFromTimestamp=news_from_backup_publisher(username);
@@ -56,6 +57,14 @@ public class BackupConnection extends Thread{
             System.out.println(e.getMessage());
         }
     }
+
+    /**
+     * search the news from a specific timestamp and from a topic
+     * @param start first date
+     * @param end end date
+     * @param topic the topic chosen by the user
+     * @return the backup news
+     */
     public ArrayList<News> news_from_timestamp_backup(Date start, Date end, String topic){
         ArrayList<News> backupNewsFromTimestamp = new ArrayList<News>();
         for(News n: backupNewsList){
@@ -65,6 +74,11 @@ public class BackupConnection extends Thread{
         return backupNewsFromTimestamp;
     }
 
+    /**
+     * search the news from a specific publisher
+     * @param username the publisher´s username
+     * @return the backup news
+     */
     public ArrayList<News>news_from_backup_publisher(String username){
         ArrayList<News> backupNewsFromTimestamp = new ArrayList<News>();
         for(News n: backupNewsList){
