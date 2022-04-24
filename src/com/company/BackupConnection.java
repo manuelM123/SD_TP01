@@ -18,8 +18,8 @@ public class BackupConnection extends Thread{
             is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
             backupNewsList = (ArrayList<News>) is.readObject();
             is.close();
-        }catch (EOFException ex){
-            System.out.println("Backup News file was read.");
+        }catch (EOFException ignored){
+
         } catch (ClassNotFoundException | IOException e) {
             System.out.println(e.getMessage());
         }

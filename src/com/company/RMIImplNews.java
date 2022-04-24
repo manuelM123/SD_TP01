@@ -32,8 +32,8 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
         prop = new Properties();
         try (FileInputStream fis = new FileInputStream("src/com/company/app.config")) {
             prop.load(fis);
-        } catch (EOFException ex){
-            System.out.println("App.config file was read.");
+        } catch (EOFException ignored){
+
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -168,7 +168,9 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     os.writeObject(NewsList);
                     os.flush();
                     os.close();
-                } catch (IOException e) {
+                }catch(EOFException ignored){
+
+                }catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
                 break;
@@ -178,7 +180,9 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     os.writeObject(Topics);
                     os.flush();
                     os.close();
-                } catch (IOException e) {
+                }catch(EOFException ignored){
+
+                }catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
                 break;
@@ -188,8 +192,8 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     Object obj = is.readObject();
                     NewsList = (ArrayList<News>) obj;
                     is.close();
-                } catch (EOFException ex){
-                    System.out.println("News list file was read.");
+                } catch (EOFException ignored){
+
                 } catch (IOException | ClassNotFoundException e) {
                     System.out.println(e.getMessage());
                 }
@@ -200,20 +204,20 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     Object obj = is.readObject();
                     Topics = (ArrayList<Topic>) obj;
                     is.close();
-                } catch (EOFException ex){
-                    System.out.println("Topics file was read.");
+                } catch (EOFException ignored){
+
                 } catch (IOException | ClassNotFoundException e) {
                     System.out.println(e.getMessage());
                 }
                 break;
             case 5:
                 BackupNewsList = new ArrayList<>();
-                try{
+                try {
                     is = new ObjectInputStream(new FileInputStream("src/com/company/backupnews.bin"));
                     BackupNewsList = (ArrayList<News>) is.readObject();
-                }catch (ClassNotFoundException | FileNotFoundException e){
-                    System.out.println(e.getMessage());
-                } catch (IOException e) {
+                }catch(EOFException ignored){
+
+                } catch (ClassNotFoundException | IOException e){
                     System.out.println(e.getMessage());
                 }
                 BackupNewsList.addAll(nArrayList);
@@ -224,7 +228,9 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     os.close();
                     is.close();
                     BackupNewsList.clear();
-                } catch (IOException e) {
+                }catch(EOFException ignored){
+
+                }catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
                 break;
@@ -235,7 +241,9 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     Object obj = is.readObject();
                     BackupNewsList = (ArrayList<News>) obj;
                     is.close();
-                } catch (IOException | ClassNotFoundException e) {
+                }catch(EOFException ignored){
+
+                }catch (IOException | ClassNotFoundException e) {
                     System.out.println(e.getMessage());
                 }
                 break;
@@ -279,7 +287,6 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
 
     @Override
     public void subscribe(ClientCallbackInterface client) throws RemoteException {
-        System.out.println("Subscribing: " + client);
         clientsCallback.add(client);
     }
 

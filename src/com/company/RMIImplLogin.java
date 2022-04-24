@@ -17,16 +17,15 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
             ObjectInputStream is = new ObjectInputStream(new FileInputStream("src/com/company/users.bin"));
             Object obj = is.readObject();
             users = (ArrayList<Person>) obj;
-        } catch (IOException e) {
+        }catch(EOFException ignored){
+
+        }catch (IOException e) {
             System.out.println("No users to show");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
         finally {
             System.out.println("Amount of users registered: " + users.size());
-            /*for (int i = 0; i < users.size(); i++) {
-                System.out.println(users.get(i).toString());
-            }*/
         }
     }
 
@@ -51,7 +50,6 @@ public class RMIImplLogin extends UnicastRemoteObject implements RMIInterfaceLog
 
     @Override
     public void Register(Person P) throws RemoteException {
-        System.out.println(P);
         users.add(P);
         saveUsers();
     }

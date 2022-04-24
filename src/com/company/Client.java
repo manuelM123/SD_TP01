@@ -38,8 +38,8 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         prop = new Properties();
         try (FileInputStream fis = new FileInputStream("src/com/company/client.config")) {
             prop.load(fis);
-        } catch (EOFException ex){
-            System.out.println("App.config file was read.");
+        } catch (EOFException ignored){
+
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -125,6 +125,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                 System.out.println("3- Insert news from a topic");
                 System.out.println("4- View every published news");
                 System.out.println("5- Logout");
+                System.out.println("-----------------------");
 
                 option = Ler.umInt();
 
@@ -408,8 +409,8 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         try {
             ArrayList<String> topicsList=NewsObject.consult_Topics();
             System.out.println("Insert topic:");
-            System.out.println("0 - Cancel operation.");
             if(topicsList.size() != 0) {
+                System.out.println("0 - Cancel operation.");
                 for (int i = 0; i < topicsList.size(); i++) {
                     System.out.println((i + 1) + " - " + topicsList.get(i));
                 }

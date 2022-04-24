@@ -21,8 +21,8 @@ public class RMIServerNews {
         prop = new Properties();
         try (FileInputStream fis = new FileInputStream("src/com/company/app.config")) {
             prop.load(fis);
-        } catch (EOFException ex){
-            System.out.println("App.config file was read.");
+        } catch (EOFException ignored){
+
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
