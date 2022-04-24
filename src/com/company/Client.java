@@ -306,7 +306,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                 System.out.println("Non-Subscriber Menu");
                 System.out.println("1- View news from a topic in a timestamp");
                 System.out.println("2- View last news from a topic");
-                System.out.println("3- Logout");
+                System.out.println("3- Exit");
                 System.out.println("-----------------------");
                 option=Ler.umInt();
                 switch (option) {
@@ -418,7 +418,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }while (option >= 3 || option <= 0);
 
 
-        System.out.println("-------------------------------------------");
+        System.out.println("-----------------------");
 
         return P;
     }

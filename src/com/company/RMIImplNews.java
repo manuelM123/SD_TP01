@@ -106,9 +106,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                         }
                     }
                 }
-                System.out.println("1");
                 if(newsToRemove.size()!=0){
-                    System.out.println("2");
                     readWriteFile(BACKUPWRITE,newsToRemove);
                     for(News n: newsToRemove){
                         NewsList.remove(n);
@@ -117,9 +115,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
 
                 news.setTimestamp(new Date());
                 NewsList.add(news);
-                System.out.println("3");
                 readWriteFile(NEWSLISTWRITE,null);
-                System.out.println("4");
                 readWriteFile(TOPICSWRITE,null);
                 /**
                  * Sending callback to the proper subscriber
@@ -226,7 +222,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     NewsList = (ArrayList<News>) obj;
                     is.close();
                 } catch (EOFException ex){
-                        System.out.println("EOF NL INPUT");
+
                 } catch (IOException | ClassNotFoundException e) {
                     System.out.println(e.getMessage());
                 }
@@ -238,7 +234,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     Topics = (ArrayList<Topic>) obj;
                     is.close();
                 } catch (EOFException ex){
-                    System.out.println("EOF T INPUT");
+
                 } catch (IOException | ClassNotFoundException e) {
                     System.out.println(e.getMessage());
                 }
@@ -250,7 +246,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     BackupNewsList = (ArrayList<News>) is.readObject();
                     is.close();
                 }catch(EOFException ignored){
-                    System.out.println("EOF BNL INPUT 1");
+
                 } catch (ClassNotFoundException | IOException e){
                     System.out.println(e.getMessage());
                 }
@@ -273,7 +269,7 @@ public class RMIImplNews extends UnicastRemoteObject implements RMIInterfaceNews
                     BackupNewsList = (ArrayList<News>) obj;
                     is.close();
                 }catch(EOFException ex){
-                    System.out.println("EOF BNL INPUT 2");
+
                 }catch (IOException | ClassNotFoundException e) {
                     System.out.println(e.getMessage());
                 }
