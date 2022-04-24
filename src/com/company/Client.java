@@ -404,18 +404,32 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     public static News createNews(){
         News n = new News();
         String s;
-        System.out.println("Insert topic:");
         int opcao;
         try {
             ArrayList<String> topicsList=NewsObject.consult_Topics();
-            for (int i = 0; i < topicsList.size(); i++) {
-                System.out.println((i+1) + " - " + topicsList.get(i));
-            }
-            do{
-                opcao=Ler.umInt();
+            System.out.println("Insert topic:");
+            System.out.println("0 - Cancel operation.");
+            if(topicsList.size() != 0) {
+                for (int i = 0; i < topicsList.size(); i++) {
+                    System.out.println((i + 1) + " - " + topicsList.get(i));
+                }
+                do {
+                    opcao = Ler.umInt();
 
-            }while(opcao<0 || opcao > topicsList.size());
-            n.setTopic(topicsList.get(opcao-1));
+                    if(opcao == 0){
+                        System.out.println("Operation canceled!");
+                        return null;
+                    }else if(opcao < 0 || opcao > topicsList.size()){
+                        System.out.println("Invalid option! Insert again.");
+                    }
+
+                } while (opcao < 0 || opcao > topicsList.size());
+                n.setTopic(topicsList.get(opcao - 1));
+            }
+            else {
+                System.out.println("No topics available!");
+                return null;
+            }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
